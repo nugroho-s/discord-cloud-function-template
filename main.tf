@@ -1,12 +1,23 @@
+resource "random_id" "bucket_suffix" {
+  keepers = {}
+  byte_length = 8
+}
+
 resource "google_storage_bucket" "bucket" {
-  name     = "function-bucket"
+  name     = "function-${random_id.bucket_suffix.hex}"
   location = "US"
+}
+
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  output_path = "${path.module}/lambda_function.zip"
+  source_dir = "${path.module}/code"
 }
 
 resource "google_storage_bucket_object" "archive" {
   name   = "index.zip"
   bucket = google_storage_bucket.bucket.name
-  source = "code"
+  source = "${path.module}/lambda_function.zip"
 }
 
 resource "google_cloudfunctions_function" "function" {
@@ -20,7 +31,7 @@ resource "google_cloudfunctions_function" "function" {
   trigger_http                 = true
   https_trigger_security_level = "SECURE_ALWAYS"
   timeout                      = 60
-  entry_point                  = "helloGET"
+  entry_point                  = "hello_http"
   labels = {
     my-label = "my-label-value"
   }
