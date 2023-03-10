@@ -1,5 +1,5 @@
 resource "random_id" "bucket_suffix" {
-  keepers = {}
+  keepers     = {}
   byte_length = 8
 }
 
@@ -11,7 +11,7 @@ resource "google_storage_bucket" "bucket" {
 data "archive_file" "lambda_zip" {
   type        = "zip"
   output_path = "${path.module}/lambda_function.zip"
-  source_dir = "${path.module}/code"
+  source_dir  = "${path.module}/code"
 }
 
 resource "google_storage_bucket_object" "archive" {
