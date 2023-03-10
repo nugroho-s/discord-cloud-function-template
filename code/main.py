@@ -21,7 +21,8 @@ def handle_interaction(request):
 
 def verify_signature(body, signature, timestamp):
     # Your public key can be found on your application in the Developer Portal
-    PUBLIC_KEY = '011205304185c8e8c7e01ea97ec5d48888aeb9f1b1e054615a067a67c14c8b2a'
+    PUBLIC_KEY = '<DISCORD PUBLIC KEY>'
+
     verify_key = VerifyKey(bytes.fromhex(PUBLIC_KEY))
     verify_key.verify(f'{timestamp}{body}'.encode(), bytes.fromhex(signature))
 
