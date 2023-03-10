@@ -1,5 +1,7 @@
 from flask import escape, jsonify
 import functions_framework
+from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
 
 def hello_world(name):
     return 'Hello {}!'.format(escape(name or "World"))
@@ -9,6 +11,18 @@ def handle_interaction(request):
         return jsonify({
             "type": 1
         })
+
+def verify_signature(signature, timestamp):
+    # Your public key can be found on your application in the Developer Portal
+    PUBLIC_KEY = '<DISCORD PUBLIC KEY>'
+
+    verify_key = VerifyKey(bytes.fromhex(PUBLIC_KEY))
+
+    signature = request.headers["X-Signature-Ed25519"]
+    timestamp = request.headers["X-Signature-Timestamp"]
+    body = request.data.decode("utf-8")
+
+    verify_key.verify(f'{timestamp}{body}'.encode(), bytes.fromhex(signature))
 
 @functions_framework.http
 def hello_http(request):
@@ -30,4 +44,10 @@ def hello_http(request):
     if (request.path is '/'):
         return hello_world(request.args["name"] if "name" in request.args else None)
     elif ("/interaction" in request.path):
+        if (not "X-Signature-Ed25519" in request.headers) or (not "X-Signature-Timestamp" in request.headers):
+            return 'invalid request signature', 401
+        try:
+            verify_signature(request.headers["X-Signature-Ed25519"], request.headers["X-Signature-Timestamp"])
+        except BadSignatureError:
+            return 'invalid request signature', 401
         return handle_interaction(request_json)
