@@ -1,3 +1,4 @@
+import os
 from flask import escape, jsonify
 import functions_framework
 from nacl.signing import VerifyKey
@@ -20,8 +21,7 @@ def handle_interaction(request):
         })
 
 def verify_signature(body, signature, timestamp):
-    # Your public key can be found on your application in the Developer Portal
-    PUBLIC_KEY = '<DISCORD PUBLIC KEY>'
+    PUBLIC_KEY = os.environ['DISCORD_PUBLIC_KEY']
 
     verify_key = VerifyKey(bytes.fromhex(PUBLIC_KEY))
     verify_key.verify(f'{timestamp}{body}'.encode(), bytes.fromhex(signature))

@@ -10,14 +10,14 @@ resource "google_storage_bucket" "bucket" {
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  output_path = "${path.module}/lambda_function.zip"
+  output_path = "${path.module}/output/${var.function_name}.zip"
   source_dir  = "${path.module}/code"
 }
 
 resource "google_storage_bucket_object" "archive" {
-  name   = "index.zip"
+  name   = local.filename_on_gcs
   bucket = google_storage_bucket.bucket.name
-  source = "${path.module}/output/lambda_function.zip"
+  source = "${path.module}/output/${var.function_name}.zip"
 }
 
 resource "google_cloudfunctions_function" "function" {
@@ -37,7 +37,7 @@ resource "google_cloudfunctions_function" "function" {
   }
 
   environment_variables = {
-    MY_ENV_VAR = "my-env-var-value"
+    DISCORD_PUBLIC_KEY = var.discord_public_key
   }
 }
 
